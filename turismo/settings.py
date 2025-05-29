@@ -77,11 +77,14 @@ WSGI_APPLICATION = 'turismo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'PID_turismo',
-        'USER': 'postgres',  
-        'PASSWORD': 'pid_2025',
-        'HOST': 'localhost', 
+        'NAME': 'PID_Turismo',
+        'USER': 'postgres',
+        'PASSWORD': 'npg_LzQoZ6I3TqWB',
+        'HOST': 'ep-dawn-sound-a886f0wt-pooler.eastus2.azure.neon.tech',
         'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
