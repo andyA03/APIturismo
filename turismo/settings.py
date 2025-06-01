@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,11 +80,17 @@ WSGI_APPLICATION = 'turismo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://pid_turismo_user:lXHRD7ZLRpqBje7hBvmYZZRpFdVcNsE2@dpg-d0sbuubipnbc738s8i50-a/pid_turismo',
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'PID_Turismo',
+        'USER': 'postgres',
+        'PASSWORD': 'npg_LzQoZ6I3TqWB',
+        'HOST': 'ep-dawn-sound-a886f0wt-pooler.eastus2.azure.neon.tech',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
+    }
 }
 
 
