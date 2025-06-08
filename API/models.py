@@ -21,11 +21,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin, models.Model):
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     email = models.CharField(max_length=255, unique=True)
-    contrasena = models.CharField(max_length=255,)
+    password = models.CharField(max_length=255,)
     fecha_nacimiento = models.DateField(null=True, blank=True)
     pais_origen = models.CharField(max_length=100, null=True, blank=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
-    ultimo_acceso = models.DateTimeField(null=True, blank=True)
+    last_login = models.DateTimeField(null=True, blank=True)
     foto_perfil = models.CharField(max_length=255, null=True, blank=True)
 
 
