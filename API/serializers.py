@@ -1,8 +1,15 @@
 from rest_framework import serializers
-from .models import Usuario, Destino, Itinerario, ItinerarioDestino, Post, Respuesta
+from .models import Destino, Itinerario, ItinerarioDestino, Post, Respuesta, Usuario
 from django.contrib.auth.hashers import make_password
 
 class UsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = "all"
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = Usuario
         fields = [
@@ -15,21 +22,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
             'pais_origen',
             'fecha_registro',
             'ultimo_acceso',
-            'foto_perfil'
-        ]
-        extra_kwargs = {
-            'contrasena': {'write_only': True},
-            'fecha_registro': {'read_only': True}
-        }
-
-    def validate_email(self, value):
-        if Usuario.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Este email ya está registrado")
-        return value
+            'foto_perfil',
+    ]
 
     def create(self, validated_data):
-        validated_data['contrasena'] = make_password(validated_data['contrasena'])
-        return super().create(validated_data)
+        user = Usuario.objects.create_user(**validated_data)
+        return user
 
 class DestinoSerializer(serializers.ModelSerializer):
     class Meta:

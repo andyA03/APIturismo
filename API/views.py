@@ -3,47 +3,56 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
-from .models import Usuario, Destino, Itinerario, ItinerarioDestino, Post, Respuesta
-from .serializers import (
-    UsuarioSerializer,
-    DestinoSerializer,
-    ItinerarioSerializer,
-    ItinerarioDestinoSerializer,
-    ItinerarioConDestinosSerializer,
-    PostSerializer,
-    PostConRespuestasSerializer,
-    RespuestaSerializer
-)
+from .models import *
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated , AllowAny
+from django.contrib.auth.hashers import check_password
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import * 
 
-class UsuarioViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para manejar usuarios con validaciones de contraseña y email único.
-    """
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Usuario registrado correctamente."}, status=201)
+        return Response(serializer.errors, status=400)
 
-    def create(self, request, *args, **kwargs):
-        """Hashea la contraseña al crear usuario"""
-        request.data['contrasena'] = make_password(request.data['contrasena'])
-        return super().create(request, *args, **kwargs)
+class LoginView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-    def update(self, request, *args, **kwargs):
-        """Hashea la contraseña al actualizar usuario"""
-        if 'contrasena' in request.data:
-            request.data['contrasena'] = make_password(request.data['contrasena'])
-        return super().update(request, *args, **kwargs)
+        user = User.objects.filter(email__iexact=email).first()
+        if not user or not check_password(password, user.password):
+            return Response({"error": "Correo o contraseña incorrectos"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    @action(detail=False, methods=['GET'])
-    def me(self, request):
-        """Endpoint para obtener datos del usuario logueado"""
-        if request.user.is_authenticated:
-            serializer = self.get_serializer(request.user)
+        refresh = RefreshToken.for_user(user)
+        return Response({"refresh": str(refresh), "access": str(refresh.access_token)}, status=status.HTTP_200_OK)
+
+class UserManagementView(APIView):
+    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    def put(self, request):
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data)
-        return Response(
-            {"error": "No estás autenticado"}, 
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"message": "Usuario eliminado correctamente."}, status=status.HTTP_200_OK)
 
 class DestinoViewSet(viewsets.ModelViewSet):
     """
@@ -160,7 +169,7 @@ class RespuestaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Filtra respuestas por post"""
-        return Respuesta.objects.filter(post_id=self.kwargs['post_pk'])
+        return Respuesta.objects.all()
 
     def perform_create(self, serializer):
         """Asigna usuario y post automáticamente"""
