@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'API',
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders'
     
 ]
 
@@ -69,6 +70,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -77,6 +79,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+]
+
+CORS_ALLOWED_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 ROOT_URLCONF = 'turismo.urls'
@@ -105,9 +114,9 @@ WSGI_APPLICATION = 'turismo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'PID_Turismo',
-        'USER': 'postgres',
-        'PASSWORD': 'npg_LzQoZ6I3TqWB',
+        'NAME': 'neondb',
+        'USER': 'neondb_owner',
+        'PASSWORD': 'npg_t0PM3UilYJuf',
         'HOST': 'ep-dawn-sound-a886f0wt-pooler.eastus2.azure.neon.tech',
         'PORT': '5432',
         'OPTIONS': {
