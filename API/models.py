@@ -1,40 +1,57 @@
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("El email es obligatorio.")
+        if self.model.objects.filter(email=email).exists():
+            raise ValueError("El email ya está registrado.")
+            
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)  
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
         return self.create_user(email, password, **extra_fields)
 
 class Usuario(AbstractBaseUser, PermissionsMixin, models.Model):
     usuario_id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    email = models.CharField(max_length=255, unique=True)
-    contrasena = models.CharField(max_length=255,)
+    email = models.EmailField(max_length=255, unique=True)
     fecha_nacimiento = models.DateField(null=True, blank=True)
     pais_origen = models.CharField(max_length=100, null=True, blank=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     ultimo_acceso = models.DateTimeField(null=True, blank=True)
     foto_perfil = models.CharField(max_length=255, null=True, blank=True)
-
+    
+    
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["nombre", "apellido"]
     objects = CustomUserManager()
 
-    def str(self):
+    def __str__(self):
         return self.email
 
+    def update_last_login(self):
+        self.ultimo_acceso = timezone.now()
+        self.save(update_fields=['ultimo_acceso'])
 
 class Destino(models.Model):
     destino_id = models.AutoField(primary_key=True)

@@ -25,7 +25,7 @@ class LoginView(APIView):
         email = request.data.get("email")
         password = request.data.get("password")
 
-        user = User.objects.filter(email__iexact=email).first()
+        user = Usuario.objects.filter(email__iexact=email).first()
         if not user or not check_password(password, user.password):
             return Response({"error": "Correo o contraseña incorrectos"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -34,7 +34,6 @@ class LoginView(APIView):
 
 class UserManagementView(APIView):
     permission_classes = [IsAuthenticated]
-    permission_classes = [AllowAny]
 
     def get(self, request):
         user = request.user
